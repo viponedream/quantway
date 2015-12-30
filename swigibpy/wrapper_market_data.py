@@ -122,6 +122,7 @@ class IBclient(object):
 
         """
         global symbols_dict
+        symbols_dict.clear()
         symbols_dict[tickerid] = ibcontract.symbol
 
         today=datetime.datetime.now()
