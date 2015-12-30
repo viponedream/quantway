@@ -8,7 +8,7 @@ import datetime
 import sys
 
 
-def get_last_hist_data(client, endDate):
+def get_last_hist_data(client, startDate, endDate):
     ibcontract = IBcontract()
 
     #ibcontract.secType = "FUT"
@@ -16,23 +16,41 @@ def get_last_hist_data(client, endDate):
     #ibcontract.symbol="GE"
     #ibcontract.exchange="GLOBEX"
 
-    symbols = ['AAPL', 'FB', 'TWTR', 'BIDU']
+    #symbols = ['AAPL', 'FB', 'TWTR', 'BIDU']
+    symbols = ['AAPL']
 
     ibcontract.secType = 'STK'
     ibcontract.exchange = 'SMART'
     ibcontract.currency = 'USD'
     ibcontract.primaryExchange = 'SMART'
 
+    
     for index in range(len(symbols)):
         print("%s: %d-%s" % (endDate, index, symbols[index]))
         ibcontract.symbol = symbols[index]
+        #endDate = datetime.datetime.strptime(end, "%Y-%m-%d")    
+        #endDate = datetime.datetime.now()
+        count = 0
+        while (cmp(startDate, endDate) < 0):
+            curDay = endDate + datetime.timedelta(days = -1)
+            print curDay, endDate
+
+            sdatetime=endDate.strftime("%Y%m%d %H:%M:%S %Z")
+            ans=client.get_IB_historical_data(ibcontract, sdatetime, '1 D', '1 hour')
+
+            endDate = curDay
+            count = count + 1
+            if count > 5:
+                break
+
         #ans=client.get_IB_historical_data(ibcontract, '1 W', '1 day')
-        sdatetime=endDate.strftime("%Y%m%d %H:%M:%S %Z")
-        ans=client.get_IB_historical_data(ibcontract, sdatetime, '4 W', '1 hour')
 
     #print ans
     #ans.to_csv("symbols.csv")
     #print ans
+    #ans = ans.drop_duplicates(subset=['symbol', 'sdate'])
+    ans = ans.drop_duplicates()
+    print ans
 
     conn=MySQLdb.connect(host='127.0.0.1',user='border',passwd='border', db='finance', port=3306)
     cur=conn.cursor()
@@ -66,18 +84,13 @@ def get_all_historical_data(start, end):
         end:   end time, timeformat: %Y-%m-%d
     '''
     startDate = datetime.datetime.strptime(start, "%Y-%m-%d")    
-    endDate = datetime.datetime.strptime(end, "%Y-%m-%d")    
+    #endDate = datetime.datetime.strptime(end, "%Y-%m-%d")    
+    endDate = datetime.datetime.now()
 
     callback = IBWrapper()
     client=IBclient(callback)
 
-    while (cmp(startDate, endDate) < 0):
-        curDay = endDate + datetime.timedelta(days = -28)
-        print curDay, endDate
-        get_last_hist_data(client, endDate)
-        endDate = curDay
-        get_last_hist_data(client, endDate)
-        break
+    get_last_hist_data(client, startDate, endDate)
 
 
 if __name__=="__main__":
@@ -85,7 +98,7 @@ if __name__=="__main__":
     """
     This simple example returns historical data
     """
-    get_all_historical_data('2015-01-01', '2015-12-29')
+    get_all_historical_data('2015-01-01', '2015-12-30')
     #get_all_historical_data('2015-01-01', '2015-06-23')
     sys.exit()
 
