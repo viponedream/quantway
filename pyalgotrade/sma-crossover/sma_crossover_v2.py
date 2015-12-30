@@ -19,7 +19,8 @@ class SMACrossOver(strategy.BacktestingStrategy):
         self.__shortPos = None
         # We'll use adjusted close values instead of regular close values.
         self.setUseAdjustedValues(True)
-        self.__prices = feed[instrument].getPriceDataSeries()
+        self.__prices = feed[instrument].getCloseDataSeries()
+        self.__curSMA = ma.SMA(self.__prices, 3)
         self.__shortSMA = ma.SMA(self.__prices, shortSmaPeriod)
         self.__longSMA = ma.SMA(self.__prices, longSmaPeriod)
 
@@ -60,42 +61,44 @@ class SMACrossOver(strategy.BacktestingStrategy):
         position.exitMarket()
 
     def enterLongSignal(self, bar):
-        return bar.getPrice() > self.__longSMA[-1] and cross.cross_above(self.__shortSMA, self.__longSMA)
+        return self.__curSMA[-1] > self.__curSMA[-2] and bar.getClose() > self.__longSMA[-1] and cross.cross_above(self.__shortSMA, self.__longSMA)
 
-    def exitLongSignal(self):
-        return cross.cross_below(self.__shortSMA, self.__longSMA) and not self.__longPos.exitActive()
+    def exitLongSignal(self, bar):
+        return (bar.getClose() < self.__curSMA[-1] or cross.cross_below(self.__curSMA, self.__shortSMA)) and not self.__longPos.exitActive()
 
     def enterShortSignal(self, bar):
-        return bar.getPrice() < self.__shortSMA[-1] and cross.cross_below(self.__shortSMA, self.__longSMA) 
+        return self.__curSMA[-1] < self.__curSMA[-2] and bar.getClose() < self.__shortSMA[-1] and cross.cross_below(self.__shortSMA, self.__longSMA)
 
-    def exitShortSignal(self):
-        return cross.cross_below(self.__shortSMA, self.__longSMA) and not self.__shortPos.exitActive()
+    def exitShortSignal(self, bar):
+        return (bar.getClose() > self.__curSMA[-1] or cross.cross_above(self.__curSMA, self.__shortSMA)) and not self.__shortPos.exitActive()
 
     def onBars(self, bars):
         # If a position was not opened, check if we should enter a long position.
+        if self.__curSMA[-1] is None:
+            return
         shares = self.getBroker().getShares(self.__instrument)
         bar = bars[self.__instrument]
         if self.__longPos is not None:
-            if self.exitLongSignal():
+            if self.exitLongSignal(bar):
                 self.__longPos.exitMarket()
         elif self.__shortPos is not None:
-            if self.exitShortSignal():
+            if self.exitShortSignal(bar):
                 self.__shortPos.exitMarket()
         else:
             if self.enterLongSignal(bar):
-                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getPrice())
+                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getClose())
                 self.__longPos = self.enterLong(self.__instrument, shares, True)
             elif self.enterShortSignal(bar):
-                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getPrice())
+                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getClose())
                 self.__shortPos = self.enterShort(self.__instrument, shares, True)
         """
         if self.__position is None:
             if cross.cross_above(self.__shortSMA, self.__longSMA) > 0:
-                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getPrice())
+                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getClose())
                 # Enter a buy market order. The order is good till canceled.
                 self.__position = self.enterLong(self.__instrument, shares, True)
             if cross.cross_below(self.__shortSMA, self.__longSMA) > 0:
-                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getPrice())
+                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getClose())
                 self.__position = self.enterShort(self.__instrument, shares, True)
 
         # Check if we have to exit the position.
@@ -109,9 +112,8 @@ def main(plot):
     cash = 50000
 
     instrument = "FB"
-    #smaPeriod = 163
-    shortSmaPeriod = 10
-    longSmaPeriod = 30
+    shortSmaPeriod = 30
+    longSmaPeriod = 60
 
     # Download the bars.
     feed = yahoofinance.build_feed([instrument], 2014, 2015, "../../data/")
@@ -133,7 +135,6 @@ def main(plot):
 
     if plot:
         plt = plotter.StrategyPlotter(strat, True, True, True)
-        #plt = plotter.StrategyPlotter(strat, True, False, True)
         plt.getInstrumentSubplot(instrument).addDataSeries("shortSMA", strat.getShortSMA())
         plt.getInstrumentSubplot(instrument).addDataSeries("longSMA", strat.getLongSMA())
         # Plot the simple returns on each bar.
