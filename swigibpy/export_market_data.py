@@ -7,40 +7,34 @@ import time
 import datetime
 import sys
 
-def get_last_hist_data(client, startDate, endDate = datetime.datetime.now()):
+def get_last_hist_data(client, symbol, startDate, endDate = datetime.datetime.now()):
     ibcontract = IBcontract()
 
     #ibcontract.secType = "FUT"
     #ibcontract.expiry="201809"
     #ibcontract.symbol="GE"
     #ibcontract.exchange="GLOBEX"
-
-    #symbols = ['AAPL', 'FB', 'TWTR', 'BIDU']
-    symbols = ['AAPL']
-
+ 
     ibcontract.secType = 'STK'
     ibcontract.exchange = 'SMART'
     ibcontract.currency = 'USD'
     ibcontract.primaryExchange = 'SMART'
 
-    for index in range(len(symbols)):
-        print("%s: %d-%s" % (endDate, index, symbols[index]))
-        ibcontract.symbol = symbols[index]
-        count = 0
-        while (cmp(startDate, endDate) < 0):
-            curDay = endDate + datetime.timedelta(days = -28)
-            print curDay, endDate
+    print("%s: %d-%s" % (endDate, index, symbol))
+    ibcontract.symbol = symbol
 
-            sdatetime=endDate.strftime("%Y%m%d %H:%M:%S %Z")
-            ans=client.get_IB_historical_data(ibcontract, sdatetime, '4 W', '1 hour')
+    while (cmp(startDate, endDate) < 0):
+        curDay = endDate + datetime.timedelta(days = -28)
+        print curDay, endDate
 
-            endDate = curDay
-            count = count + 1
-            #if count > 5:
-                #break
-    ans = ans.drop_duplicates()
+        sdatetime=endDate.strftime("%Y%m%d %H:%M:%S %Z")
+        ans=client.get_IB_historical_data(ibcontract, sdatetime, '4 W', '1 hour')
+
+        endDate = curDay
+
+    ans = ans.drop_duplicates(subset=['symbol', 'sdate'])
     #print ans
-    #ans.to_csv("symbols.csv")
+    #ans.to_csv("symbol.csv")
     #print ans
     #ans = ans.drop_duplicates(subset=['symbol', 'sdate'])
 
@@ -74,7 +68,11 @@ def get_all_historical_data(start, end):
     callback = IBWrapper()
     client=IBclient(callback)
 
-    get_last_hist_data(client, startDate)
+    symbols = ['SPY', 'QQQ', 'AAPL', 'FB', 'BIDU', 'RENN', 'FEYE', 'USO', 'ILMN']
+    for index in range(len(symbols)):
+        symbol = symbols[index]
+        print("%s: %d-%s" % (endDate, index, symbol))
+        get_last_hist_data(client, symbol, startDate)
 
 
 if __name__=="__main__":
