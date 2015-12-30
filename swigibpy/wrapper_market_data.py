@@ -100,7 +100,7 @@ class IBWrapper(EWrapper):
 
             historicdata.add_row(symbol=symbols_dict[reqId], sdate=date, open=openprice, high=high,
                 low=low, close=close, volume=volume, barcount=barCount, wap=WAP, hasgaps=hasGaps)
-            print("symbol: %s, Date: %s, open: %f" % (symbols_dict[reqId], str(date), openprice))
+            #print("symbol: %s, Date: %s, open: %f" % (symbols_dict[reqId], str(date), openprice))
 
 
 class IBclient(object):
