@@ -2,7 +2,7 @@ from wrapper_market_data import IBWrapper, IBclient
 from swigibpy import Contract as IBcontract
 
 from pandas.io import sql
-#import MySQLdb
+import MySQLdb
 import time
 import datetime
 import sys
@@ -37,7 +37,6 @@ def get_last_hist_data(client, symbols, startDate, endDate = datetime.datetime.n
         ans.to_csv(symbol+".csv")
         #print ans
 
-        '''
         conn=MySQLdb.connect(host='127.0.0.1',user='border',passwd='border', db='finance', port=3306)
         cur=conn.cursor()
 
@@ -53,7 +52,6 @@ def get_last_hist_data(client, symbols, startDate, endDate = datetime.datetime.n
         conn.commit()
         cur.close()
         conn.close()
-        '''
         time.sleep(5)
 
 

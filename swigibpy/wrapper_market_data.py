@@ -12,8 +12,6 @@ MEANINGLESS_NUMBER=999
 
 symbols_dict = dict()
 
-EMPTY_HDATA=autodf("symbol", "sdate", "open", "high", "low", "close", "volume", "barcount", "wap", "hasgaps")
-
 ### how many seconds before we give up
 MAX_WAIT=60
 
@@ -79,7 +77,9 @@ class IBWrapper(EWrapper):
         else:
             histdict=self.data_historicdata
 
-        histdict[tickerid]=EMPTY_HDATA
+        if histdict.get(tickerid, None) is None:
+            EMPTY_HDATA=autodf("symbol", "sdate", "open", "high", "low", "close", "volume", "barcount", "wap", "hasgaps")
+            histdict[tickerid]=EMPTY_HDATA
         print 'init_historicprices histdict: ', histdict
         setattr(self, "data_historicdata", histdict)
         setattr(self, "flag_historicdata_finished", False)
