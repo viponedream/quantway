@@ -15,7 +15,7 @@ symbols_dict = dict()
 EMPTY_HDATA=autodf("symbol", "sdate", "open", "high", "low", "close", "volume", "barcount", "wap", "hasgaps")
 
 ### how many seconds before we give up
-MAX_WAIT=30
+MAX_WAIT=60
 
 def return_IB_connection_info():
     """
@@ -80,6 +80,7 @@ class IBWrapper(EWrapper):
             histdict=self.data_historicdata
 
         histdict[tickerid]=EMPTY_HDATA
+        print 'init_historicprices histdict: ', histdict
         setattr(self, "data_historicdata", histdict)
         setattr(self, "flag_historicdata_finished", False)
 
@@ -123,6 +124,7 @@ class IBclient(object):
         """
         global symbols_dict
         symbols_dict[tickerid] = ibcontract.symbol
+        print "TickerID: ", tickerid, symbols_dict
 
         today=datetime.datetime.now()
         #d1=datetime.datetime.now()
@@ -161,6 +163,5 @@ class IBclient(object):
             raise Exception("Problem getting historic data")
 
         historicdata=self.cb.data_historicdata[tickerid]
-        #results=historicdata.to_pandas("date")
         results=historicdata.to_pandas()
         return results

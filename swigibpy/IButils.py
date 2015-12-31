@@ -13,8 +13,6 @@ class autodf(object):
     '''
 
     def __init__(self, *args):
-
-
         storage=dict()
         self.keynames=args
         for keyname in self.keynames:
@@ -23,7 +21,6 @@ class autodf(object):
         self.storage=storage
 
     def add_row(self, **kwargs):
-
         for keyname in self.storage.keys():
             if keyname in kwargs:
                 self.storage[keyname].append(kwargs[keyname])
