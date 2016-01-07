@@ -112,11 +112,11 @@ def main(plot):
     cash = 50000
 
     instrument = "FB"
-    shortSmaPeriod = 30
-    longSmaPeriod = 60
+    shortSmaPeriod = 10
+    longSmaPeriod = 20
 
     # Download the bars.
-    feed = yahoofinance.build_feed([instrument], 2014, 2015, "../../data/")
+    feed = yahoofinance.build_feed([instrument], 2015, 2016, "../../data/")
 
     strat = SMACrossOver(feed, cash, instrument, shortSmaPeriod, longSmaPeriod)
 

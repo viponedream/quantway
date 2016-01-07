@@ -1,49 +1,114 @@
+import math
+import datetime
+
+import numpy as np
+from scipy import stats
+
 from pyalgotrade import strategy
 from pyalgotrade.technical import ma
 from pyalgotrade.technical import cross
+from pyalgotrade.technical import linreg
 from pyalgotrade import plotter
 
+from pyalgotrade import dataseries
 from pyalgotrade.tools import yahoofinance
 from pyalgotrade.stratanalyzer import sharpe
 from pyalgotrade.stratanalyzer import returns
 from pyalgotrade.stratanalyzer import trades
 from pyalgotrade.stratanalyzer import drawdown
-from pyalgotrade.utils import stats
+from pyalgotrade.utils import stats as pystats
+from pyalgotrade.utils import dt
+
 
 
 class SMACrossOver(strategy.BacktestingStrategy):
     def __init__(self, feed, instrument, smaPeriod):
         strategy.BacktestingStrategy.__init__(self, feed)
+        self.__smaPeriod = smaPeriod
         self.__instrument = instrument
-        self.__position = None
+        self.__longPos = None
+        self.__shortPos = None
         # We'll use adjusted close values instead of regular close values.
         self.setUseAdjustedValues(True)
         self.__prices = feed[instrument].getPriceDataSeries()
         self.__sma = ma.SMA(self.__prices, smaPeriod)
+        self.__slope = linreg.Slope(self.__prices, 5)
+        self.__buySlopes = dataseries.SequenceDataSeries(dataseries.DEFAULT_MAX_LEN)
 
     def getSMA(self):
         return self.__sma
 
+    def getSlope(self):
+        return self.__slope
+
+    def getBuySlope(self):
+        return self.__buySlopes
+
     def onEnterCanceled(self, position):
-        self.__position = None
+        if self.__longPos == position:
+            self.__longPos = None
+        elif self.__shortPos == position:
+            self.__shortPos = None
+
+    def onEnterOk(self, position):
+        execInfo = position.getEntryOrder().getExecutionInfo()
+
+        slope = math.fabs(self.__slope.getValueAbsolute(len(self.__slope) - 1))
+        self.__buySlopes.append(slope)
+        if self.__longPos == position:
+            self.info("Long BUY %s at $%.2f, slope: %.4f" % (self.__instrument, execInfo.getPrice(), slope))
+        elif self.__shortPos == position:
+            self.info("Short BUY %s at $%.2f, slope: %.4f" % (self.__instrument, execInfo.getPrice(), slope))
+
+    def onEnterCanceled(self, position):
+        if self.__longPos == position:
+            self.__longPos = None
+        elif self.__shortPos == position:
+            self.__shortPos = None
 
     def onExitOk(self, position):
-        self.__position = None
+        execInfo = position.getExitOrder().getExecutionInfo()
+        slope = math.fabs(self.__slope.getValueAbsolute(len(self.__slope) - 1))
+        self.__buySlopes.append(slope)
+        if self.__longPos == position:
+            self.info("SellToCover %s at $%.2f, slope: %.4f" % (self.__instrument, execInfo.getPrice(), slope))
+            self.__longPos = None
+        elif self.__shortPos == position:
+            self.info("BuyToCover %s at $%.2f, slope: %.4f" % (self.__instrument, execInfo.getPrice(), slope))
+            self.__shortPos = None
 
-    def onExitCanceled(self, position):
-        # If the exit was canceled, re-submit it.
-        self.__position.exitMarket()
+    def enterLongSignal(self, bar):
+        return cross.cross_above(self.__prices, self.__sma) > 0
+
+    def exitLongSignal(self, bar):
+        return cross.cross_below(self.__prices, self.__sma) > 0
+
+    def enterShortSignal(self, bar):
+        return cross.cross_below(self.__prices, self.__sma) > 0
+
+    def exitShortSignal(self, bar):
+        return cross.cross_above(self.__prices, self.__sma) > 0
 
     def onBars(self, bars):
         # If a position was not opened, check if we should enter a long position.
-        if self.__position is None:
-            if cross.cross_above(self.__prices, self.__sma) > 0:
-                shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getPrice())
-                # Enter a buy market order. The order is good till canceled.
-                self.__position = self.enterLong(self.__instrument, shares, True)
-        # Check if we have to exit the position.
-        elif not self.__position.exitActive() and cross.cross_below(self.__prices, self.__sma) > 0:
-            self.__position.exitMarket()
+        if self.__sma[-1] is None:
+            return
+
+        bar = bars[self.__instrument]
+
+        if self.__longPos is not None:
+            if self.exitLongSignal(bar):
+                self.__longPos.exitMarket()
+        elif self.__shortPos is not None:
+            if self.exitShortSignal(bar):
+                self.__shortPos.exitMarket()
+
+        if self.__longPos is None or self.__shortPos is None:
+            shares = int(self.getBroker().getCash() * 0.9 / bars[self.__instrument].getClose())
+            if self.enterLongSignal(bar):
+                self.__longPos = self.enterLong(self.__instrument, shares, True)
+            elif self.enterShortSignal(bar):
+                self.__shortPos = self.enterShort(self.__instrument, shares, True)
 
 def main(plot):
     instrument = "FB"
@@ -51,7 +116,7 @@ def main(plot):
     smaPeriod = 20
 
     # Download the bars.
-    feed = yahoofinance.build_feed([instrument], 2014, 2015, "../../data/")
+    feed = yahoofinance.build_feed([instrument], 2015, 2016, "../../data/")
 
     strat = SMACrossOver(feed, instrument, smaPeriod)
 
@@ -70,16 +135,17 @@ def main(plot):
 
     if plot:
         plt = plotter.StrategyPlotter(strat, True, True, True)
-        #plt = plotter.StrategyPlotter(strat, True, False, True)
         plt.getInstrumentSubplot(instrument).addDataSeries("sma", strat.getSMA())
         # Plot the simple returns on each bar.
         plt.getOrCreateSubplot("returns").addDataSeries("Simple returns", retAnalyzer.getReturns())
+        #plt.getOrCreateSubplot("Slope").addDataSeries("slope", strat.getSlope())
+        plt.getOrCreateSubplot("BuySlope").addDataSeries("BuySlope", strat.getBuySlope())
 
     strat.run()
     print "Final portfolio value: $%.2f" % strat.getResult()
     print "Cumulative returns: %.2f %%" % (retAnalyzer.getCumulativeReturns()[-1] * 100)
-    print "Average daily return: %.2f %%" % (stats.mean(retAnalyzer.getReturns()) * 100)
-    print "Std. dev. daily return: %.4f" % (stats.stddev(retAnalyzer.getReturns()))
+    print "Average daily return: %.2f %%" % (pystats.mean(retAnalyzer.getReturns()) * 100)
+    print "Std. dev. daily return: %.4f" % (pystats.stddev(retAnalyzer.getReturns()))
     print "Sharpe ratio: %.2f" % (sharpeRatioAnalyzer.getSharpeRatio(0.05))
     print "Max. drawdown: %.2f %%" % (drawDownAnalyzer.getMaxDrawDown() * 100)
     print "Longest drawdown duration: %s" % (drawDownAnalyzer.getLongestDrawDownDuration())
