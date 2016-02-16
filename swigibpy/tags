@@ -1,0 +1,110 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Contract	kv_scan.py	/^from swigibpy import EWrapper, EPosixClientSocket, Contract$/;"	i
+DEFAULT_VALUE	IButils.py	/^DEFAULT_VALUE=np.nan$/;"	v
+EMPTY_HDATA	wrapper_market_data.py	/^EMPTY_HDATA=autodf("symbol", "sdate", "open", "high", "low", "close", "volume", "barcount", "wap", "hasgaps")$/;"	v
+EPosixClientSocket	kv_scan.py	/^from swigibpy import EWrapper, EPosixClientSocket, Contract$/;"	i
+EPosixClientSocket	wrapper_market_data.py	/^from swigibpy import EPosixClientSocket$/;"	i
+EPosixClientSocket	wrapper_v5.py	/^from swigibpy import EPosixClientSocket, ExecutionFilter$/;"	i
+EWrapper	kv_scan.py	/^from swigibpy import EWrapper, EPosixClientSocket, Contract$/;"	i
+EWrapper	wrapper_market_data.py	/^from swigibpy import EWrapper$/;"	i
+EWrapper	wrapper_v5.py	/^from swigibpy import EWrapper$/;"	i
+Event	kv_scan.py	/^from threading import Event$/;"	i
+ExecutionFilter	wrapper_v5.py	/^from swigibpy import EPosixClientSocket, ExecutionFilter$/;"	i
+HistoricalDataExample	kv_scan.py	/^class HistoricalDataExample(EWrapper):$/;"	c
+IBOrder	wrapper_v5.py	/^from swigibpy import Order as IBOrder$/;"	i
+IBWrapper	export_market_data.py	/^from wrapper_market_data import IBWrapper, IBclient$/;"	i
+IBWrapper	kv_account.py	/^from sysIB.wrapper_v5 import IBWrapper, IBclient$/;"	i
+IBWrapper	wrapper_market_data.py	/^class IBWrapper(EWrapper):$/;"	c
+IBWrapper	wrapper_v5.py	/^class IBWrapper(EWrapper):$/;"	c
+IBclient	export_market_data.py	/^from wrapper_market_data import IBWrapper, IBclient$/;"	i
+IBclient	kv_account.py	/^from sysIB.wrapper_v5 import IBWrapper, IBclient$/;"	i
+IBclient	wrapper_market_data.py	/^class IBclient(object):$/;"	c
+IBclient	wrapper_v5.py	/^class IBclient(object):$/;"	c
+IBcontract	export_market_data.py	/^from swigibpy import Contract as IBcontract$/;"	i
+IBcontract	kv_account.py	/^from swigibpy import Contract as IBcontract$/;"	i
+MAX_WAIT	wrapper_market_data.py	/^MAX_WAIT=60$/;"	v
+MAX_WAIT_SECONDS	wrapper_v5.py	/^MAX_WAIT_SECONDS=10000$/;"	v
+MEANINGLESS_NUMBER	wrapper_market_data.py	/^MEANINGLESS_NUMBER=999$/;"	v
+MEANINGLESS_NUMBER	wrapper_v5.py	/^MEANINGLESS_NUMBER=1830$/;"	v
+MySQLdb	export_market_data.py	/^import MySQLdb$/;"	i
+WAIT_TIME	kv_scan.py	/^WAIT_TIME = 5.0$/;"	v
+__init__	IButils.py	/^    def __init__(self, *args):$/;"	m	class:autodf
+__init__	kv_scan.py	/^    def __init__(self):$/;"	m	class:HistoricalDataExample
+__init__	wrapper_market_data.py	/^    def __init__(self, callback):$/;"	m	class:IBclient
+__init__	wrapper_v5.py	/^    def __init__(self, callback, accountid="U8903760"):$/;"	m	class:IBclient
+accountDownloadEnd	wrapper_v5.py	/^    def accountDownloadEnd(self, accountName):$/;"	m	class:IBWrapper
+accountSummary	wrapper_v5.py	/^    def accountSummary(self, reqId, account, tag, value, curency):$/;"	m	class:IBWrapper
+action_ib_fill	IButils.py	/^def action_ib_fill(execlist):$/;"	f
+action_ib_fill	wrapper_v5.py	/^from sysIB.IButils import bs_resolve, action_ib_fill$/;"	i
+add_row	IButils.py	/^    def add_row(self, **kwargs):$/;"	m	class:autodf
+autodf	IButils.py	/^class autodf(object):$/;"	c
+autodf	wrapper_market_data.py	/^from IButils import autodf$/;"	i
+bs_resolve	IButils.py	/^def bs_resolve(x):$/;"	f
+bs_resolve	wrapper_v5.py	/^from sysIB.IButils import bs_resolve, action_ib_fill$/;"	i
+callback	kv_account.py	/^    callback = IBWrapper()$/;"	v
+callback	kv_scan.py	/^callback = HistoricalDataExample()$/;"	v
+cdetails	kv_account.py	/^    cdetails=client.get_contract_details(ibcontract)$/;"	v
+client	kv_account.py	/^    client=IBclient(callback, "All")$/;"	v
+columns	kv_scan.py	/^columns = ['sym', 'Date', 'bidPrice', 'askPrice', 'lastPrice']$/;"	v
+commissionReport	wrapper_v5.py	/^    def commissionReport(self, blah):$/;"	m	class:IBWrapper
+contractDetails	wrapper_v5.py	/^    def contractDetails(self, reqId, contractDetails):$/;"	m	class:IBWrapper
+contractDetailsEnd	wrapper_v5.py	/^    def contractDetailsEnd(self, reqId):$/;"	m	class:IBWrapper
+contractlist	kv_scan.py	/^contractlist = pd.DataFrame([$/;"	v
+create_contract	kv_scan.py	/^def create_contract(security):$/;"	f
+datetime	export_market_data.py	/^import datetime$/;"	i
+datetime	kv_scan.py	/^from datetime import datetime$/;"	i
+datetime	wrapper_market_data.py	/^import datetime$/;"	i
+error	wrapper_market_data.py	/^    def error(self, id, errorCode, errorString):$/;"	m	class:IBWrapper
+error	wrapper_v5.py	/^    def error(self, id, errorCode, errorString):$/;"	m	class:IBWrapper
+get_IB_account_data	wrapper_v5.py	/^    def get_IB_account_data(self):$/;"	m	class:IBclient
+get_IB_historical_data	wrapper_market_data.py	/^    def get_IB_historical_data(self, ibcontract, sdatetime, durationStr="1 Y", barSizeSetting="1 day", tickerid=MEANINGLESS_NUMBER):$/;"	m	class:IBclient
+get_all_historical_data	export_market_data.py	/^def get_all_historical_data(start, end):$/;"	f
+get_contract_details	wrapper_v5.py	/^    def get_contract_details(self, ibcontract, reqId=MEANINGLESS_NUMBER):$/;"	m	class:IBclient
+get_last_hist_data	export_market_data.py	/^def get_last_hist_data(client, symbols, startDate, endDate = datetime.datetime.now()):$/;"	f
+historicalData	kv_scan.py	/^    def historicalData(self, reqId, date, open, high,$/;"	m	class:HistoricalDataExample
+historicalData	wrapper_market_data.py	/^    def historicalData(self, reqId, date, openprice, high,$/;"	m	class:IBWrapper
+ibcontract	kv_account.py	/^    ibcontract = IBcontract()$/;"	v
+init_contractdetails	wrapper_v5.py	/^    def init_contractdetails(self, reqId):$/;"	m	class:IBWrapper
+init_error	wrapper_market_data.py	/^    def init_error(self):$/;"	m	class:IBWrapper
+init_error	wrapper_v5.py	/^    def init_error(self):$/;"	m	class:IBWrapper
+init_historicprices	wrapper_market_data.py	/^    def init_historicprices(self, tickerid):$/;"	m	class:IBWrapper
+init_portfolio_data	wrapper_v5.py	/^    def init_portfolio_data(self):$/;"	m	class:IBWrapper
+managedAccounts	kv_scan.py	/^    def managedAccounts(self, openOrderEnd):$/;"	m	class:HistoricalDataExample
+managedAccounts	wrapper_market_data.py	/^    def managedAccounts(self, openOrderEnd):$/;"	m	class:IBWrapper
+managedAccounts	wrapper_v5.py	/^    def managedAccounts(self, accountsList):$/;"	m	class:IBWrapper
+nextValidId	kv_scan.py	/^    def nextValidId(self, orderId):$/;"	m	class:HistoricalDataExample
+nextValidId	wrapper_market_data.py	/^    def nextValidId(self, orderId):$/;"	m	class:IBWrapper
+nextValidId	wrapper_v5.py	/^    def nextValidId(self, id):$/;"	m	class:IBWrapper
+np	IButils.py	/^import numpy as np$/;"	i
+np	kv_scan.py	/^import numpy as np$/;"	i
+openOrder	kv_scan.py	/^    def openOrder(self, orderID, contract, order, orderState):$/;"	m	class:HistoricalDataExample
+openOrderEnd	kv_scan.py	/^    def openOrderEnd(self):$/;"	m	class:HistoricalDataExample
+orderStatus	kv_scan.py	/^    def orderStatus(self, id, status, filled, remaining, avgFillPrice, permId,$/;"	m	class:HistoricalDataExample
+orderStatus	wrapper_v5.py	/^    def orderStatus(self, reqid, status, filled, remaining, avgFillPrice, permId,$/;"	m	class:IBWrapper
+pd	IButils.py	/^import pandas as pd$/;"	i
+pd	kv_scan.py	/^import pandas as pd$/;"	i
+random	wrapper_market_data.py	/^import random$/;"	i
+req_account_summary	wrapper_v5.py	/^    def req_account_summary(self, reqId=MEANINGLESS_NUMBER):$/;"	m	class:IBclient
+return_IB_connection_info	wrapper_market_data.py	/^def return_IB_connection_info():$/;"	f
+return_IB_connection_info	wrapper_v5.py	/^def return_IB_connection_info():$/;"	f
+sql	export_market_data.py	/^from pandas.io import sql$/;"	i
+symbols	kv_scan.py	/^symbols = pd.DataFrame(data=np.zeros((0,len(columns))), columns=columns)$/;"	v
+symbols_dict	wrapper_market_data.py	/^symbols_dict = dict()$/;"	v
+sys	export_market_data.py	/^import sys$/;"	i
+sys	wrapper_market_data.py	/^import sys$/;"	i
+time	export_market_data.py	/^import time$/;"	i
+time	kv_account.py	/^import time$/;"	i
+time	wrapper_market_data.py	/^import time$/;"	i
+time	wrapper_v5.py	/^import time$/;"	i
+to_pandas	IButils.py	/^    def to_pandas(self, indexname=None):$/;"	m	class:autodf
+today	kv_scan.py	/^today = datetime.today()$/;"	v
+tws	kv_scan.py	/^tws = EPosixClientSocket(callback, reconnect_auto=True)$/;"	v
+updateAccountTime	wrapper_v5.py	/^    def updateAccountTime(self, timeStamp):$/;"	m	class:IBWrapper
+updateAccountValue	wrapper_v5.py	/^    def updateAccountValue(self, key, value, currency, accountName):$/;"	m	class:IBWrapper
+updatePortfolio	wrapper_v5.py	/^    def updatePortfolio(self, contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName):$/;"	m	class:IBWrapper
+useRTH	kv_scan.py	/^useRTH = 0$/;"	v

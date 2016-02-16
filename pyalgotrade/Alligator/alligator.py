@@ -4,6 +4,7 @@ import datetime
 
 import numpy as np
 from scipy import stats
+from pandas import TimeSeries
 
 from pyalgotrade import strategy
 from pyalgotrade.technical import ma
@@ -22,13 +23,16 @@ from pyalgotrade.utils import dt
 
 import sys
 
-class dualThrust(strategy.BacktestingStrategy):
-    def __init__(self, feed, instrument, smaPeriod):
+class alligatorIndicator(strategy.BacktestingStrategy):
+    def __init__(self, feed, instrument, jawPeriod=13, teethPeriod=8, lipsPeriod=5, \
+                                         jawOffset=8,  teethOffset=5, lipsOffset=3):
         strategy.BacktestingStrategy.__init__(self, feed)
-        self.__smaPeriod = smaPeriod
         self.__instrument = instrument
         self.__longPos = None
         self.__shortPos = None
+
+        self.__jawPeriod = jawPeriod
+
         # We'll use adjusted close values instead of regular close values.
         self.setUseAdjustedValues(False)
 
@@ -36,11 +40,72 @@ class dualThrust(strategy.BacktestingStrategy):
         self.__closeDataSeries = feed[instrument].getPriceDataSeries()
         self.__lowDataSeries = feed[instrument].getLowDataSeries()
 
-        self.__sma = ma.SMA(self.__closeDataSeries, smaPeriod)
-
+        self.__sma = ma.SMA(self.__closeDataSeries, jawPeriod)
+        print "alligatorIndicator init", __name__
+        #self.__jaw = ma.SMA(self.__closeDataSeries, jawPeriod)
+        self.__jawDataSeries = dataseries.SequenceDataSeries(dataseries.DEFAULT_MAX_LEN)
+        self.__teethDataSeries = dataseries.SequenceDataSeries(dataseries.DEFAULT_MAX_LEN)
+        self.__lipsDataSeries = dataseries.SequenceDataSeries(dataseries.DEFAULT_MAX_LEN)
 
     def getSMA(self):
         return self.__sma
+
+    def SMMAOrg(tseries, period):
+        """
+        Calculate smoothed moving average as described here:
+            https://mahifx.com/indicators/smoothed-moving-average-smma
+        :param tseries: time series
+        :param period: smoothing period
+
+        Calculate smoothed moving average as described here:
+            http://www.metatrader5.com/en/terminal/help/analytics/indicators/trend_indicators/ma#smma
+        Smoothed Moving Average (SMMA)
+        The first value of this smoothed moving average is calculated as the simple moving average (SMA):
+        SUM1 = SUM (CLOSE (i), N)
+        SMMA1 = SUM1 / N
+        The second moving average is calculated according to this formula:
+        SMMA (i) = (SMMA1*(N-1) + CLOSE (i)) / N
+        Succeeding moving averages are calculated according to the below formula:
+        PREVSUM = SMMA (i - 1) * N
+        SMMA (i) = (PREVSUM - SMMA (i - 1) + CLOSE (i)) / N
+        """
+        result = TimeSeries([NaN for i in tseries], tseries.index)
+        # first value: SUM (CLOSE, N)/N
+        result[period] = tseries[:period].sum()/period
+        for i in xrange(period+1, len(tseries)):
+            # second and subsequent values:
+            # SMMA (i) = (SUM1 – SMMA1 + CLOSE (i))/ N
+            result[i] = (tseries[i-period:i].sum() - result[period] + tseries.iget(i))/period
+        return result
+
+    def SMMA(self, dataList, period):
+        """
+        Calculate smoothed moving average as described here:
+            https://mahifx.com/indicators/smoothed-moving-average-smma
+        :param tseries: dataList
+        :param period: smoothing period
+
+        Calculate smoothed moving average as described here:
+            http://www.metatrader5.com/en/terminal/help/analytics/indicators/trend_indicators/ma#smma
+        Smoothed Moving Average (SMMA)
+        The first value of this smoothed moving average is calculated as the simple moving average (SMA):
+        SUM1 = SUM (CLOSE (i), N)
+        SMMA1 = SUM1 / N
+        The second moving average is calculated according to this formula:
+        SMMA (i) = (SMMA1*(N-1) + CLOSE (i)) / N
+        Succeeding moving averages are calculated according to the below formula:
+        PREVSUM = SMMA (i - 1) * N
+        SMMA (i) = (PREVSUM - SMMA (i - 1) + CLOSE (i)) / N
+        """
+        # first value: SUM (CLOSE, N)/N
+        close = dataList[-period:]
+        smma1 = sum(close)/period
+        smma = list()
+        for i in range(len(close)):
+            # second and subsequent values:
+            # SMMA (i) = (SMMA (i - 1) * (N - 1) + CLOSE (i)) / N
+            smma.append((sum(close) - smma1 + close[i])/period)
+        return smma
 
     def onEnterCanceled(self, position):
         if self.__longPos == position:
@@ -97,9 +162,14 @@ class dualThrust(strategy.BacktestingStrategy):
 
         bar = bars[self.__instrument]
 
+        jaw = self.SMMA(self.__closeDataSeries, self.__jawPeriod)
+        #print jaw
+
         highValues = self.__highDataSeries._SequenceDataSeries__values
         closeValues = self.__closeDataSeries._SequenceDataSeries__values
         lowValues = self.__lowDataSeries._SequenceDataSeries__values
+
+        print closeValues[0], closeValues[-1], bar.getClose(), len(closeValues)
 
         HH = max(highValues)
         HC = max(closeValues)
@@ -114,7 +184,7 @@ class dualThrust(strategy.BacktestingStrategy):
         buyLine = open + K1 * range
         shortLine = open - K2 * range
 
-        print bar.getPrice(), range, buyLine, shortLine
+        #print bar.getPrice(), range, buyLine, shortLine
 
         if self.__longPos is not None:
             if self.exitLongSignal(bar, shortLine):
@@ -132,12 +202,11 @@ class dualThrust(strategy.BacktestingStrategy):
 
 def main(plot):
     instrument = "FB"
-    smaPeriod = 3
 
     # Download the bars.
     feed = yahoofinance.build_feed([instrument], 2015, 2016, "../../data/")
 
-    strat = dualThrust(feed, instrument, smaPeriod)
+    strat = alligatorIndicator(feed, instrument)
 
     retAnalyzer = returns.Returns()
     strat.attachAnalyzer(retAnalyzer)
